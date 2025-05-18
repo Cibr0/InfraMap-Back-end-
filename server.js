@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import path from "path";
 import { fileURLToPath } from "url";
 
+import userRoutes from "./routes/users.js";
 import pointRoutes from "./routes/points.js";
 
 const app = express();
@@ -32,6 +33,7 @@ mongoose
 
 // Usar as rotas
 app.use("/points", pointRoutes);
+app.use("/users", userRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
