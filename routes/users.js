@@ -9,12 +9,19 @@ router.post("/", async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
+    if (password.length < 6) {
+      return res
+        .status(400)
+        .json({ message: "A senha deve ter no mínimo 6 caracteres" });
+    }
+
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res
         .status(400)
         .json({ message: "Usuário já existe com este email" });
     }
+
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = new User({
