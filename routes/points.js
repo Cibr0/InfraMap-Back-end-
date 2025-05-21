@@ -4,9 +4,11 @@ import upload from "../config/multer.js";
 
 const router = express.Router();
 
-router.post("/", upload.single("image"), async (req, res) => {
+router.post("/criarpoint", upload.single("image"), async (req, res) => {
   try {
     const { name, description, coordinates } = req.body;
+    const userID = req.query.userID;
+    console.log("USER ID RECEBIDO:", userID);
     const image = req.file.filename;
 
     const point = new Point({
@@ -14,6 +16,7 @@ router.post("/", upload.single("image"), async (req, res) => {
       description,
       coordinates: JSON.parse(coordinates),
       image,
+      userID,
     });
 
     await point.save();

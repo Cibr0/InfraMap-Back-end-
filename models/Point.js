@@ -8,6 +8,7 @@ const PointSchema = new mongoose.Schema({
     type: [Number], // [longitude, latitude]
     index: "2dsphere", // permite buscas geoespaciais
   },
+  userID: String,
 });
 
 export default mongoose.model("Point", PointSchema);
