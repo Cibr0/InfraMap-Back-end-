@@ -4,7 +4,7 @@ import upload from "../config/multer.js";
 
 const router = express.Router();
 
-router.post("/criarpoint", upload.single("image"), async (req, res) => {
+router.post("/createpoint", upload.single("image"), async (req, res) => {
   try {
     const { name, description, latitude, longitude, userID } = req.body;
     console.log("USER ID RECEBIDO:", userID);
