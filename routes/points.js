@@ -87,4 +87,60 @@ router.get("/:id", async (req, res) => {
   }
 });
 
+router.delete("/delete/:id", async (req, res) => {
+  try {
+    const pointId = req.params.id;
+    const deletedPoint = await Point.findByIdAndDelete(pointId);
+
+    if (!deletedPoint) {
+      return res.status(404).json({ error: "Point não encontrado" });
+    }
+
+    res.status(200).json({ message: "Point deletado com sucesso" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Erro ao deletar point" });
+  }
+});
+
+router.put("/update/:id", upload.single("image"), async (req, res) => {
+  try {
+    const pointId = req.params.id;
+    const { name, description, latitude, longitude, userID } = req.body;
+
+    const updateData = {
+      name,
+      description,
+      userID,
+    };
+
+    if (latitude && longitude) {
+      updateData.coordinates = [longitude, latitude];
+    }
+
+    if (req.file) {
+      updateData.image = req.file.filename;
+    }
+
+    const updatedPoint = await Point.findByIdAndUpdate(pointId, updateData, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!updatedPoint) {
+      return res.status(404).json({ error: "Point não encontrado" });
+    }
+
+    res.status(200).json(updatedPoint);
+  } catch (error) {
+    if (error.name === "ValidationError") {
+      const messages = Object.values(error.errors).map((e) => e.message);
+      return res.status(400).json({ error: messages });
+    }
+
+    console.error(error);
+    res.status(500).json({ error: "Erro ao atualizar point" });
+  }
+});
+
 export default router;
