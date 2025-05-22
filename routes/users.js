@@ -5,7 +5,7 @@ import bcrypt from "bcrypt";
 const router = express.Router();
 
 // Rota para criar um novo usuário
-router.post("/", async (req, res) => {
+router.post("/register", async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
