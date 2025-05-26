@@ -5,8 +5,8 @@ import mongoose from "mongoose";
 import path from "path";
 import { fileURLToPath } from "url";
 
-import userRoutes from "./routes/users.js";
-import pointRoutes from "./routes/points.js";
+import userRoutes from "./src/routes/users.js";
+import pointRoutes from "./src/routes/points.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
