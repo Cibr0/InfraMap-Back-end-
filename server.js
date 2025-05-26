@@ -1,3 +1,4 @@
+import cors from "cors";
 import dotenv from "dotenv";
 dotenv.config();
 import express from "express";
@@ -16,8 +17,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 app.use(express.json());
-const cors = require("cors");
-app.use(cors({ origin: "*" }));
+
+app.use(cors());
 
 // Expor a pasta uploads
 app.use("/uploads", express.static(path.resolve(__dirname, "uploads")));
