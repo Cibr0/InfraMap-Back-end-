@@ -1,6 +1,6 @@
 import express from "express";
-import Point from "../models/point.js";
-import upload from "../config/multer.js";
+import Point from "../../models/Point.js";
+import upload from "../../config/multer.js";
 
 const router = express.Router();
 
