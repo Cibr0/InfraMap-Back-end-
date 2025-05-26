@@ -16,6 +16,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 app.use(express.json());
+const cors = require("cors");
+app.use(cors({ origin: "*" }));
 
 // Expor a pasta uploads
 app.use("/uploads", express.static(path.resolve(__dirname, "uploads")));
