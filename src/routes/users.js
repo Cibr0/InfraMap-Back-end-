@@ -1,6 +1,10 @@
 import express from "express";
 import User from "../models/User.js";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const router = express.Router();
 
@@ -31,7 +35,20 @@ router.post("/register", async (req, res) => {
     });
 
     await user.save();
-    res.status(201).json({ message: "Usuário criado com sucesso" });
+
+    const token = jwt.sign(
+      { userId: user._id, name: user.name },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: process.env.JWT_EXPIRATION || "1h",
+      }
+    );
+
+    res.status(201).json({
+      message: "Usuário criado com sucesso",
+      token,
+      userId: user._id,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Erro ao criar usuário" });
@@ -44,15 +61,26 @@ router.post("/login", async (req, res) => {
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
-    if (!user) {
+    if (!user)
       return res.status(400).json({ message: "Usuário não encontrado" });
-    }
-    const passwordMatch = await bcrypt.compare(password, user.password);
-    if (!passwordMatch) {
-      return res.status(400).json({ message: "Senha incorreta" });
-    }
 
-    res.status(200).json({ message: "Login bem-sucedido", userId: user._id });
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    if (!passwordMatch)
+      return res.status(400).json({ message: "Senha incorreta" });
+
+    const token = jwt.sign(
+      { userId: user._id, name: user.name },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: process.env.JWT_EXPIRATION || "1h",
+      }
+    );
+
+    res.status(200).json({
+      message: "Login bem-sucedido",
+      token,
+      userId: user._id,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Erro ao fazer login" });
@@ -117,5 +145,22 @@ router.delete("/:id", async (req, res) => {
     res.status(500).json({ message: "Erro ao deletar usuário" });
   }
 });
+
+// Middleware para proteger rotas
+export function verificarToken(req, res, next) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({ message: "Token ausente ou inválido" });
+  }
+
+  const token = authHeader.split(" ")[1];
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (err) {
+    res.status(401).json({ message: "Token inválido ou expirado" });
+  }
+}
 
 export default router;
