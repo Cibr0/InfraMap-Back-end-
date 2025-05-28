@@ -1,7 +1,7 @@
 import express from "express";
-import Point from "../models/Point.js";
 import upload from "../config/multer.js";
 import { verificarToken } from "./users.js";
+import * as pointController from "../controllers/pointController.js";
 
 const router = express.Router();
 
@@ -9,155 +9,16 @@ router.post(
   "/createpoint",
   verificarToken,
   upload.single("image"),
-  async (req, res) => {
-    try {
-      console.log("BODY:", req.body);
-      console.log("FILE:", req.file);
-      console.log("USER:", req.user);
-
-      const { name, description, latitude, longitude } = req.body;
-      const userID = req.user.userId;
-      const image = req.file?.filename;
-
-      // Verifica se todos os campos obrigatórios foram preenchidos
-      if (!name || !description || !latitude || !longitude || !userID) {
-        return res
-          .status(400)
-          .json({ error: "Todos os campos são obrigatórios" });
-      }
-
-      // Verifica se a imagem foi enviada
-      if (!req.file) {
-        return res.status(400).json({ error: "Imagem é obrigatória" });
-      }
-
-      // Verifica se o nome do point já existe
-      const existingNamePoint = await Point.findOne({
-        name,
-      });
-      if (existingNamePoint) {
-        return res
-          .status(400)
-          .json({ error: "Já existe um point com esse nome." });
-      }
-
-      //para saber se o point já existe no mesma região
-      const existingLocatePoint = await Point.findOne({
-        coordinates: {
-          $near: {
-            $geometry: {
-              type: "Point",
-              coordinates: [longitude, latitude],
-            },
-            $maxDistance: 1000, // Distância máxima em metros
-          },
-        },
-      });
-
-      if (existingLocatePoint) {
-        return res
-          .status(400)
-          .json({ error: "Já existe um point nesse local." });
-      }
-
-      const coordinates = [longitude, latitude];
-
-      const point = new Point({
-        name,
-        description,
-        coordinates,
-        image,
-        userID,
-      });
-
-      await point.save();
-      res.status(201).json(point);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: "Erro ao criar point" });
-    }
-  }
+  pointController.createPoint
 );
-
-router.get("/allpoints", async (req, res) => {
-  try {
-    const points = await Point.find();
-    res.status(200).json(points);
-  } catch (error) {
-    res.status(500).json({ error: "Erro ao buscar points" });
-  }
-});
-
-router.get("/:id", async (req, res) => {
-  try {
-    const userID = req.params.id;
-    const pontosDoUsuario = await Point.find({ userID });
-    res.status(200).json(pontosDoUsuario);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Erro ao buscar points do usuário" });
-  }
-});
-
-router.delete("/delete/:id", verificarToken, async (req, res) => {
-  try {
-    const pointId = req.params.id;
-    const deletedPoint = await Point.findByIdAndDelete(pointId);
-
-    if (!deletedPoint) {
-      return res.status(404).json({ error: "Point não encontrado" });
-    }
-
-    res.status(200).json({ message: "Point deletado com sucesso" });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Erro ao deletar point" });
-  }
-});
-
+router.get("/allpoints", pointController.getAllPoints);
+router.get("/:id", pointController.getUserPoints);
+router.delete("/delete/:id", verificarToken, pointController.deletePoint);
 router.put(
   "/update/:id",
   verificarToken,
   upload.single("image"),
-  async (req, res) => {
-    try {
-      const pointId = req.params.id;
-      const { name, description, latitude, longitude, userID } = req.body;
-
-      const updateData = {
-        name,
-        description,
-        userID,
-      };
-
-      if (latitude && longitude) {
-        updateData.coordinates = [longitude, latitude];
-      }
-
-      if (req.file) {
-        updateData.image = req.file.filename;
-      }
-
-      const updatedPoint = await Point.findByIdAndUpdate(pointId, updateData, {
-        new: true,
-        runValidators: true,
-      });
-
-      if (!updatedPoint) {
-        return res.status(404).json({ error: "Point não encontrado" });
-      }
-
-      res.status(200).json(updatedPoint);
-    } catch (error) {
-      if (error.name === "ValidationError") {
-        const messages = Object.values(error.errors).map((e) => e.message);
-        return res.status(400).json({ error: messages });
-      }
-
-      console.error(error);
-      res.status(500).json({ error: "Erro ao atualizar point" });
-    }
-  }
+  pointController.updatePoint
 );
 
 export default router;
