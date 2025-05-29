@@ -60,9 +60,6 @@ export const updatePoint = async (req, res) => {
     const updatedPoint = await pointService.updatePoint(req.params.id, {
       name,
       description,
-      latitude,
-      longitude,
-      userID,
       image,
     });
 

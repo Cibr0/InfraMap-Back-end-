@@ -14,11 +14,7 @@ router.post(
 router.get("/allpoints", pointController.getAllPoints);
 router.get("/:id", pointController.getUserPoints);
 router.delete("/delete/:id", verificarToken, pointController.deletePoint);
-router.put(
-  "/update/:id",
-  verificarToken,
-  upload.single("image"),
-  pointController.updatePoint
+router.put("/update/:id",verificarToken,upload.single("image"),pointController.updatePoint
 );
 
 export default router;

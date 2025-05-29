@@ -55,13 +55,16 @@ export const deletePoint = async (pointId) => {
   return deleted;
 };
 
-export const updatePoint = async (
-  pointId,
-  { name, description, latitude, longitude, image, userID }
-) => {
-  const updateData = { name, description, userID };
-  if (latitude && longitude) updateData.coordinates = [longitude, latitude];
-  if (image) updateData.image = image;
+export const updatePoint = async (pointId, { name, description, image }) => {
+  if (!name || !description || !image) {
+    throw { status: 400, message: "Todos os campos são obrigatórios" };
+  }
+
+  const updateData = {
+    name,
+    description,
+    image,
+  };
 
   const updated = await Point.findByIdAndUpdate(pointId, updateData, {
     new: true,
