@@ -24,7 +24,7 @@ export const createPoint = async ({
           type: "Point",
           coordinates: [longitude, latitude],
         },
-        $maxDistance: 1000,
+        $maxDistance: 100,
       },
     },
   });
